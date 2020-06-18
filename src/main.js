@@ -8,12 +8,10 @@ Vue.directive("only-numbers", {
   bind(el) {
     let hasDot = false;
 
-    el.addEventListener("input", (event) => {
+    el.addEventListener("input" , (event) => {
       let formattedValue = event.target.value;
       let lastIntroduced = formattedValue[formattedValue.length - 1];
-      let valueWithoutLast = formattedValue.slice(0, -1);
-
-      console.log(valueWithoutLast[valueWithoutLast.length - 1])
+      let valueWithoutLast = formattedValue.slice (0, -1);
 
       if (el.value.length === 1 && lastIntroduced === "-") {
         el.value = lastIntroduced;
@@ -23,13 +21,10 @@ Vue.directive("only-numbers", {
       } else if (lastIntroduced === "." && formattedValue.length !== 1 && !hasDot) {
         el.value = formattedValue;
         hasDot = true;
-      } else if (lastIntroduced === "0" && valueWithoutLast[valueWithoutLast.length - 1] === "." ||
-        lastIntroduced === "0" && valueWithoutLast[valueWithoutLast.length - 1] === "0") {
-        el.value = formattedValue;
       } else if (lastIntroduced === " " || lastIntroduced === ".") {
         el.value = valueWithoutLast;
       } else if (isNaN(lastIntroduced) && lastIntroduced !== ".") {
-        el.value = valueWithoutLast;
+        el.value = formattedValue.slice(0, -1);
       } else {
         const result = parseFloat(formattedValue);
         el.value = isNaN(result) ? "" : parseFloat(formattedValue);
