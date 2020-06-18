@@ -12,22 +12,25 @@ Vue.directive("only-numbers", {
       let formattedValue = event.target.value;
       let lastIntroduced = formattedValue[formattedValue.length - 1];
       let valueWithoutLast = formattedValue.slice(0, -1);
+      let ifMinus = el.value.length === 1 && lastIntroduced === "-";
+      let firstDot = lastIntroduced === "." && formattedValue.length !== 1 && !hasDot;
+      let zeroAfterDot = lastIntroduced === "0" && hasDot;
+      let zeroAfterZero = lastIntroduced === "0" && valueWithoutLast[valueWithoutLast.length - 1] === "."
+        || lastIntroduced === "0" && valueWithoutLast[valueWithoutLast.length - 1] === "0";
+      let notDoubleDot = hasDot && !formattedValue.includes(".");
+      let notSpaceOrDot = lastIntroduced === " " || lastIntroduced === ".";
+      let antiDotOrSpace = isNaN(lastIntroduced) && lastIntroduced !== ".";
 
-      if (el.value.length === 1 && lastIntroduced === "-") {
+      if (ifMinus) {
         el.value = lastIntroduced;
-      } else if (hasDot && !formattedValue.includes(".")) {
+      } else if (notDoubleDot) {
         el.value = valueWithoutLast;
         hasDot = false;
-      } else if (lastIntroduced === "." && formattedValue.length !== 1 && !hasDot) {
+      } else if (firstDot || zeroAfterDot || zeroAfterZero) {
         el.value = formattedValue;
         hasDot = true;
-      } else if (lastIntroduced === "0" && valueWithoutLast[valueWithoutLast.length - 1] === "."
-        || lastIntroduced === "0" && valueWithoutLast[valueWithoutLast.length - 1] === "0") {
-        el.value = formattedValue;
-      } else if (lastIntroduced === " " || lastIntroduced === ".") {
+      } else if (notSpaceOrDot || antiDotOrSpace) {
         el.value = valueWithoutLast;
-      } else if (isNaN(lastIntroduced) && lastIntroduced !== ".") {
-        el.value = formattedValue.slice(0, -1);
       } else {
         const result = parseFloat(formattedValue);
         el.value = isNaN(result) ? "" : parseFloat(formattedValue);
