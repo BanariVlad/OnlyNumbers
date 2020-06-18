@@ -8,10 +8,10 @@ Vue.directive("only-numbers", {
   bind(el) {
     let hasDot = false;
 
-    el.addEventListener("input" , (event) => {
+    el.addEventListener("input", (event) => {
       let formattedValue = event.target.value;
       let lastIntroduced = formattedValue[formattedValue.length - 1];
-      let valueWithoutLast = formattedValue.slice (0, -1);
+      let valueWithoutLast = formattedValue.slice(0, -1);
 
       if (el.value.length === 1 && lastIntroduced === "-") {
         el.value = lastIntroduced;
