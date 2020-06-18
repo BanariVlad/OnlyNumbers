@@ -24,7 +24,7 @@ Vue.directive("only-numbers", {
       } else if (lastIntroduced === " " || lastIntroduced === ".") {
         el.value = valueWithoutLast;
       } else if (isNaN(lastIntroduced) && lastIntroduced !== ".") {
-        el.value = formattedValue.slice(0, -1);
+        el.value = valueWithoutLast;
       } else {
         const result = parseFloat(formattedValue);
         el.value = isNaN(result) ? "" : parseFloat(formattedValue);
