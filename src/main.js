@@ -34,20 +34,6 @@ Vue.directive("only-numbers", {
   }
 });
 
-// else if (notDoubleDot) {
-//   el.value = valueWithoutLast;
-//   hasDot = false;
-// }
-// else if (firstDot || zeroAfterDot || zeroAfterZero) {
-//   el.value = formattedValue;
-//   hasDot = true;
-// } else if (notSpaceOrDot || antiDotOrSpace) {
-//   el.value = valueWithoutLast;
-// } else {
-//   const result = parseFloat(formattedValue);
-//   el.value = isNaN(result) ? "" : parseFloat(formattedValue);
-// }
-
 new Vue({
   router,
   render: h => h(App)
