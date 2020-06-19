@@ -7,7 +7,6 @@ Vue.config.productionTip = false;
 Vue.directive("only-numbers", {
   bind(el) {
     let hasDot = false;
-    let hasMinus = false;
 
     el.addEventListener("input", (event) => {
       let formattedValue = event.target.value;
@@ -15,19 +14,29 @@ Vue.directive("only-numbers", {
       let valueWithoutLast = formattedValue.slice(0, -1);
       let ifMinus = el.value.length === 1 && lastIntroduced === "-";
       let ifFirstDot = formattedValue.length === 1 && lastIntroduced === ".";
-      let ifDotAfterMinus = lastIntroduced === "." && formattedValue.length === 2 && hasMinus;
+      let ifDotAfterMinus = lastIntroduced === "." && valueWithoutLast[valueWithoutLast.length - 1] === "-";
+      let lastIsDot = formattedValue[formattedValue.length - 1] === "." && hasDot;
+      let ifDoubleDot = lastIntroduced === "." && valueWithoutLast.includes(".");
 
       if (!formattedValue.includes(".")) {
         hasDot = false;
-      } else if (ifMinus) {
+      }
+
+      if (ifMinus) {
         el.value = lastIntroduced;
-        hasMinus = true;
+      } else if (lastIsDot) {
+        el.value = formattedValue;
+        hasDot = true;
       } else if (ifFirstDot || ifDotAfterMinus) {
         el.value = valueWithoutLast;
       } else if (lastIntroduced === "." && !hasDot) {
         el.value = formattedValue;
         hasDot = true;
       } else if (isNaN(lastIntroduced) || lastIntroduced === " ") {
+        el.value = valueWithoutLast;
+      }
+
+      if (ifDoubleDot) {
         el.value = valueWithoutLast;
       }
     });
