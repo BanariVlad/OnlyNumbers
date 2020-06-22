@@ -39,7 +39,7 @@ Vue.directive("only-numbers", {
         return event.preventDefault();
       }
 
-      if (validDotAndMinus(lastValue)) {
+      if (validDot(lastValue)) {
         return event.preventDefault();
       }
     });
@@ -118,7 +118,7 @@ Vue.directive("only-numbers", {
       );
     };
 
-    const validDotAndMinus = value => {
+    const validDot = value => {
       return value === "." && el.value.includes(".");
     };
 
