@@ -12,8 +12,8 @@ Vue.directive("only-numbers", {
 
     el.addEventListener("keydown", event => {
       let lastValue = event.key;
-      lastIntroduced = lastValue;
       let zeroAndMinusValidation = validZeroAndMinus(lastValue);
+      lastIntroduced = lastValue;
       oldValue = el.value;
 
       if (validFirstSymbols(lastValue) && lastValue !== "Backspace") {
@@ -56,7 +56,6 @@ Vue.directive("only-numbers", {
 
     el.addEventListener("input", event => {
       newValue = event.target.value;
-      console.log(oldValue);
 
       if (validMinus(lastIntroduced)) {
         el.value = oldValue;
