@@ -1,6 +1,7 @@
 import Vue from "vue";
 import App from "./App.vue";
 import router from "./router";
+import vuetify from "./plugins/vuetify";
 
 Vue.config.productionTip = false;
 
@@ -9,29 +10,31 @@ Vue.directive("only-numbers", {
     let newValue;
     let oldValue;
     let lastIntroduced;
+    let mainValue;
 
     el.addEventListener("keydown", event => {
+      mainValue = event.target.value;
       let lastValue = event.key;
       let zeroAndMinusValidation = validZeroAndMinus(lastValue);
       lastIntroduced = lastValue;
-      oldValue = el.value;
+      oldValue = mainValue;
 
       if (validFirstSymbols(lastValue) && lastValue !== "Backspace") {
         return event.preventDefault();
       }
 
       if (zeroAndMinusValidation && lastValue === "-") {
-        el.value = "-";
+        event.target.value = "-";
         return event.preventDefault();
       }
 
       if (zeroAndMinusValidation && lastValue === ".") {
-        el.value = "0.";
+        event.target.value = "0.";
         return event.preventDefault();
       }
 
       if (validDotAfterMinus(lastValue)) {
-        el.value = "-0.";
+        event.target.value = "-0.";
         return event.preventDefault();
       }
 
@@ -44,13 +47,13 @@ Vue.directive("only-numbers", {
       }
     });
 
-    el.addEventListener("blur", () => {
-      let lastValue = el.value[el.value.length - 1];
+    el.addEventListener("change", event => {
+      let lastValue = mainValue[mainValue.length - 1];
 
-      if (el.value === "-0" || el.value === "-0.") {
-        el.value = "";
+      if (mainValue === "-0" || mainValue === "-0.") {
+        event.target._value = "";
       } else if (lastValue === "." || lastValue === "-") {
-        el.value = el.value.slice(0, -1);
+        event.target._value = mainValue.slice(0, -1);
       }
     });
 
@@ -58,27 +61,28 @@ Vue.directive("only-numbers", {
       newValue = event.target.value;
 
       if (validMinus(lastIntroduced)) {
-        el.value = oldValue;
+        event.target.value = oldValue;
       }
 
       if (oldValue.includes("-") && lastIntroduced === "-") {
-        el.value = oldValue;
+        event.target.value = oldValue;
       }
 
-      if (validDotDeleting(oldValue, newValue) && el.value[0] === "0") {
-        el.value = el.value.slice(1, el.value.length);
+      if (validDotDeleting(oldValue, newValue) && mainValue[0] === "0") {
+        event.target.value = mainValue.slice(2, mainValue.length);
       }
 
       if (
         validDotDeleting(oldValue, newValue) &&
-        el.value[0] === "-" &&
-        el.value[1] === "0"
+        mainValue[0] === "-" &&
+        mainValue[1] === "0"
       ) {
-        el.value = el.value.slice(0, 1) + el.value.slice(2, el.value.length);
+        event.target.value =
+          mainValue.slice(0, 1) + mainValue.slice(3, mainValue.length);
       }
 
       if (newValue[0] === ".") {
-        el.value = oldValue;
+        event.target.value = oldValue;
       }
     });
 
@@ -87,20 +91,18 @@ Vue.directive("only-numbers", {
     };
 
     const validFirstSymbols = value => {
-      return (
-        (el.value === "0" && value !== ".") ||
-        (el.value === "-0" && value !== ".")
-      );
+      return value !== "." && (mainValue === "0" || mainValue === "-0");
     };
 
     const validZeroAndMinus = value => {
       return (
-        (value === "." && el.value === "") || (value === "-" && el.value === "")
+        (value === "." && mainValue === "") ||
+        (value === "-" && mainValue === "")
       );
     };
 
     const validDotAfterMinus = value => {
-      return value === "." && el.value === "-";
+      return value === "." && mainValue === "-";
     };
 
     const validInput = value => {
@@ -118,7 +120,7 @@ Vue.directive("only-numbers", {
     };
 
     const validDot = value => {
-      return value === "." && el.value.includes(".");
+      return value === "." && mainValue.includes(".");
     };
 
     const validMinus = value => {
@@ -129,5 +131,6 @@ Vue.directive("only-numbers", {
 
 new Vue({
   router,
+  vuetify,
   render: h => h(App)
 }).$mount("#app");
