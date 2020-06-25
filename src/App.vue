@@ -1,6 +1,7 @@
 <template>
   <v-app>
-    <v-text-field v-only-numbers></v-text-field>
+    <v-text-field v-model="test" v-only-numbers="test"></v-text-field>
+    <p>{{test}}</p>
   </v-app>
 </template>
 
@@ -9,7 +10,7 @@ export default {
   name: "App",
 
   data: () => ({
-    //
+    test: ""
   })
 };
 </script>

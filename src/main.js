@@ -6,11 +6,11 @@ import vuetify from "./plugins/vuetify";
 Vue.config.productionTip = false;
 
 Vue.directive("only-numbers", {
-  bind(el) {
-    let newValue;
-    let oldValue;
-    let lastIntroduced;
-    let mainValue;
+  bind(el, binding, vNode) {
+    let newValue = "";
+    let oldValue = "";
+    let lastIntroduced = "";
+    let mainValue = "";
 
     el.addEventListener("keydown", event => {
       mainValue = event.target.value;
@@ -47,18 +47,12 @@ Vue.directive("only-numbers", {
       }
     });
 
-    el.addEventListener("change", event => {
-      let lastValue = mainValue[mainValue.length - 1];
-
-      if (mainValue === "-0" || mainValue === "-0.") {
-        event.target._value = "";
-      } else if (lastValue === "." || lastValue === "-") {
-        event.target._value = mainValue.slice(0, -1);
-      }
-    });
-
     el.addEventListener("input", event => {
       newValue = event.target.value;
+
+      if (validZero(lastIntroduced)) {
+        event.target.value = oldValue;
+      }
 
       if (validMinus(lastIntroduced)) {
         event.target.value = oldValue;
@@ -83,6 +77,21 @@ Vue.directive("only-numbers", {
 
       if (newValue[0] === ".") {
         event.target.value = oldValue;
+      }
+
+      if (newValue[0] === "-" && newValue[1] === ".") {
+        event.target.value = oldValue;
+      }
+    });
+
+    vNode.componentInstance.$on("blur", event => {
+      let value = event.target.value;
+      if (blurValidDot(value)) {
+        vNode.componentInstance.$data.lazyValue = value.slice(0, -1);
+      }
+
+      if (value === "-0" || value === "0.") {
+        vNode.componentInstance.$data.lazyValue = "";
       }
     });
 
@@ -125,6 +134,18 @@ Vue.directive("only-numbers", {
 
     const validMinus = value => {
       return value === "-" && newValue.indexOf("-") > 0;
+    };
+
+    const blurValidDot = value => {
+      return value[value.length - 1] === ".";
+    };
+
+    const validZero = value => {
+      return (
+        value === "0" &&
+        (newValue[0] === "0" && newValue !== "0") ||
+        (newValue[0] === "-" && newValue[1] === "0" && newValue !== "-0")
+      );
     };
   }
 });
