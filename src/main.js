@@ -6,7 +6,7 @@ import vuetify from "./plugins/vuetify";
 Vue.config.productionTip = false;
 
 Vue.directive("only-numbers", {
-  bind: function (el, binding, vNode) {
+  bind: function(el, binding, vNode) {
     let newValue = "";
     let oldValue = "";
     let lastIntroduced = "";
@@ -86,20 +86,40 @@ Vue.directive("only-numbers", {
       if (validBeforeMinus()) {
         event.target.value = oldValue;
       }
-    });
 
-    vNode.componentInstance.$on("blur", () => {
-      let value = newValue;
-      if (blurValidDot(value)) {
-        vNode.componentInstance.$data.lazyValue = value.slice(0, -1);
+      if (validDeletingBeforeDot()) {
+        event.target.value = "0" + oldValue.slice(1, oldValue.length);
+        newValue = event.target.value;
       }
 
-      if (value === "-0" || value === "0.") {
-        vNode.componentInstance.$data.lazyValue = "";
+      if (validDeletingWithMinus()) {
+        event.target.value = "-0" + oldValue.slice(2, oldValue.length);
+        newValue = event.target.value;
+      }
+
+      if (validNumbersAfterZero() && lastIntroduced !== "Backspace") {
+        event.target.value = oldValue;
+      }
+    });
+
+    vNode.componentInstance.$on("blur", event => {
+      let value = event.target.value;
+      let formattedValue = blurValidValue(newValue);
+
+      if (validNumbersAfterZero()) {
+        vNode.componentInstance.$data.lazyValue = oldValue;
+      }
+
+      if (blurValidTermination(value)) {
+        vNode.componentInstance.$data.lazyValue = formattedValue;
       }
 
       if (blurValidDotAndMinus() || blurValidZero()) {
-        vNode.componentInstance.$data.lazyValue = oldValue;
+        vNode.componentInstance.$data.lazyValue = formattedValue;
+      }
+
+      if (blurValidDeleting(value) || formattedValue === "-") {
+        vNode.componentInstance.$data.lazyValue = "";
       }
     });
 
@@ -155,15 +175,36 @@ Vue.directive("only-numbers", {
       );
     };
 
-    const blurValidDot = value => {
-      return value[value.length - 1] === ".";
+    const validDeletingBeforeDot = () => {
+      return (
+        newValue[0] === "." &&
+        newValue[0] !== oldValue[0] &&
+        oldValue[1] === "."
+      );
+    };
+
+    const validDeletingWithMinus = () => {
+      return (
+        oldValue[0] === "-" && newValue[1] === "." && oldValue.includes(".")
+      );
+    };
+
+    const validNumbersAfterZero = () => {
+      return (
+        (newValue[0] === "0" && oldValue[1] === "." && newValue[1] !== ".") ||
+        (newValue[0] === "-" && newValue[1] === "0" && newValue[2] !== "." && oldValue[2] === ".")
+      );
+    };
+
+    const blurValidTermination = value => {
+      return value[value.length - 1] === "." || value[value.length - 1] === "-";
     };
 
     const blurValidDotAndMinus = () => {
       return (
         (newValue[0] === "-" && newValue[1] === "-") ||
         (newValue[0] === "." && oldValue[0] !== ".") ||
-        (newValue[1] === "." && oldValue[1] !== ".")
+        (newValue[1] === "." && oldValue[1] !== "." && newValue[0] === "-")
       );
     };
 
@@ -172,6 +213,20 @@ Vue.directive("only-numbers", {
         (newValue[0] === "0" && oldValue[0] !== "0") ||
         (newValue[1] === "0" && oldValue[1] !== "0")
       );
+    };
+
+    const blurValidDeleting = value => {
+      return value === "-0" || value === "0." || value === "-0.";
+    };
+
+    const blurValidValue = value => {
+      if (value[value.length - 1] === "-" && value[value.length - 2] === ".") {
+        return value.slice(0, value.length - 2);
+      } else if (value[value.length - 1] === "." || value[value.length - 1] === "-") {
+        return value.slice(0, -1);
+      } else {
+        return value;
+      }
     };
   }
 });
