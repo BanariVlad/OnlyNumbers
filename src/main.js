@@ -126,13 +126,15 @@ Vue.directive("only-numbers", {
         vNode.componentInstance.$data.lazyValue = "";
       }
 
-      if (checkBlurMinusValidation(newValue)) {
-        vNode.componentInstance.$data.lazyValue = blurValidMinus(newValue);
-      } else if (secondBlurMinusValidation(newValue)) {
-        vNode.componentInstance.$data.lazyValue = "-" + validSecondMinus(newValue);
+      if (checkBlurMinusValidation(value)) {
+        vNode.componentInstance.$data.lazyValue = blurValidMinus(oldValue);
       }
 
-      if (blurValidMinuses(newValue)) {
+      if (secondBlurMinusValidation(value)) {
+        vNode.componentInstance.$data.lazyValue = oldValue;
+      }
+
+      if (blurValidMinuses(value)) {
         vNode.componentInstance.$data.lazyValue = oldValue;
       }
 
@@ -292,19 +294,8 @@ Vue.directive("only-numbers", {
       );
     };
 
-    const validSecondMinus = value => {
-      let valueWithoutMinus = value.slice(1, value.length);
-      return (
-        valueWithoutMinus.slice(0, valueWithoutMinus.indexOf("-")) +
-        valueWithoutMinus.slice(
-          valueWithoutMinus.indexOf("-") + 1,
-          valueWithoutMinus.length
-        )
-      );
-    };
-
     const blurValidMinuses = value => {
-      return value[0] !== "-" && value[1] === "-";
+      return value[0] === "-" && value[1] === "-";
     };
   }
 });
