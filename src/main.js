@@ -6,7 +6,7 @@ import vuetify from "./plugins/vuetify";
 Vue.config.productionTip = false;
 
 Vue.directive("only-numbers", {
-  bind(el, binding, vNode) {
+  bind: function (el, binding, vNode) {
     let newValue = "";
     let oldValue = "";
     let lastIntroduced = "";
@@ -82,16 +82,24 @@ Vue.directive("only-numbers", {
       if (newValue[0] === "-" && newValue[1] === ".") {
         event.target.value = oldValue;
       }
+
+      if (validBeforeMinus()) {
+        event.target.value = oldValue;
+      }
     });
 
-    vNode.componentInstance.$on("blur", event => {
-      let value = event.target.value;
+    vNode.componentInstance.$on("blur", () => {
+      let value = newValue;
       if (blurValidDot(value)) {
         vNode.componentInstance.$data.lazyValue = value.slice(0, -1);
       }
 
       if (value === "-0" || value === "0.") {
         vNode.componentInstance.$data.lazyValue = "";
+      }
+
+      if (blurValidDotAndMinus() || blurValidZero()) {
+        vNode.componentInstance.$data.lazyValue = oldValue;
       }
     });
 
@@ -104,10 +112,7 @@ Vue.directive("only-numbers", {
     };
 
     const validZeroAndMinus = value => {
-      return (
-        (value === "." && mainValue === "") ||
-        (value === "-" && mainValue === "")
-      );
+      return mainValue === "" && (value === "." || value === "-");
     };
 
     const validDotAfterMinus = value => {
@@ -136,15 +141,36 @@ Vue.directive("only-numbers", {
       return value === "-" && newValue.indexOf("-") > 0;
     };
 
+    const validZero = value => {
+      return (
+        value === "0" &&
+        ((newValue[0] === "0" && newValue !== "0") ||
+          (newValue[0] === "-" && newValue[1] === "0" && newValue !== "-0"))
+      );
+    };
+
+    const validBeforeMinus = () => {
+      return (
+        oldValue[0] === "-" && newValue[0] !== "-" && newValue.includes("-")
+      );
+    };
+
     const blurValidDot = value => {
       return value[value.length - 1] === ".";
     };
 
-    const validZero = value => {
+    const blurValidDotAndMinus = () => {
       return (
-        value === "0" &&
-        (newValue[0] === "0" && newValue !== "0") ||
-        (newValue[0] === "-" && newValue[1] === "0" && newValue !== "-0")
+        (newValue[0] === "-" && newValue[1] === "-") ||
+        (newValue[0] === "." && oldValue[0] !== ".") ||
+        (newValue[1] === "." && oldValue[1] !== ".")
+      );
+    };
+
+    const blurValidZero = () => {
+      return (
+        (newValue[0] === "0" && oldValue[0] !== "0") ||
+        (newValue[1] === "0" && oldValue[1] !== "0")
       );
     };
   }
