@@ -119,7 +119,8 @@ Vue.directive("only-numbers", {
       if (checkBlurMinusValidation(newValue)) {
         vNode.componentInstance.$data.lazyValue = blurValidMinus(newValue);
       } else if (secondBlurMinusValidation(newValue)) {
-        vNode.componentInstance.$data.lazyValue = "-" + validSecondMinus(newValue);
+        vNode.componentInstance.$data.lazyValue =
+          "-" + validSecondMinus(newValue);
       }
 
       if (validNumbersAfterZero() || blurValidBeforeMinus(newValue)) {
@@ -168,6 +169,7 @@ Vue.directive("only-numbers", {
     const validZero = value => {
       return (
         value === "0" &&
+        oldValue[0] !== "0" &&
         ((newValue[0] === "0" && newValue !== "0") ||
           (newValue[0] === "-" && newValue[1] === "0" && newValue !== "-0"))
       );
@@ -244,7 +246,7 @@ Vue.directive("only-numbers", {
     };
 
     const secondBlurMinusValidation = value => {
-      return value[0] === "-" && value.slice(1, value.length).includes("-")
+      return value[0] === "-" && value.slice(1, value.length).includes("-");
     };
 
     const blurValidMinus = value => {
@@ -266,7 +268,7 @@ Vue.directive("only-numbers", {
     };
 
     const blurValidBeforeMinus = value => {
-      return value[0] !== "-" && value[1] === "-"
+      return value[0] !== "-" && value[1] === "-";
     };
   }
 });
