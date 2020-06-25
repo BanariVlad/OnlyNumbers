@@ -100,8 +100,7 @@ Vue.directive("only-numbers", {
       ) {
         event.target.value = oldValue;
       } else if (newValue[0] === "-" && newValue[1] === ".") {
-        console.log(oldValue, newValue);
-        event.target.value = "-0." + oldValue.slice(2, oldValue.length);
+        event.target.value = "-0." + oldValue.slice(1, oldValue.length);
       }
 
       if (validDeletingWithMinus()) {
