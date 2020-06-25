@@ -99,6 +99,14 @@ Vue.directive("only-numbers", {
         event.target.value = oldValue;
       }
 
+      if (
+        lastIntroduced === "Backspace" &&
+        newValue[0] === "-" &&
+        newValue[1] === "."
+      ) {
+        event.target.value = oldValue;
+      }
+
       newValue = event.target.value;
     });
 
@@ -106,12 +114,8 @@ Vue.directive("only-numbers", {
       let value = event.target.value;
       let formattedValue = blurValidValue(newValue);
 
-      if (blurValidTermination(value)) {
-        vNode.componentInstance.$data.lazyValue = formattedValue;
-      }
-
       if (blurValidZero(value)) {
-        vNode.componentInstance.$data.lazyValue = newValue;
+        vNode.componentInstance.$data.lazyValue = formattedValue;
       }
 
       if (blurValidDotAndMinus()) {
@@ -128,9 +132,29 @@ Vue.directive("only-numbers", {
         vNode.componentInstance.$data.lazyValue = "-" + validSecondMinus(newValue);
       }
 
-      if (validNumbersAfterZero() || blurValidBeforeMinus(newValue)) {
+      if (validNumbersAfterZero() || blurValidMinuses(newValue)) {
         vNode.componentInstance.$data.lazyValue = oldValue;
       }
+
+      if (value[0] === ".") {
+        vNode.componentInstance.$data.lazyValue = "0" + value;
+      } else if (value[0] === "-" && value[1] === ".") {
+        vNode.componentInstance.$data.lazyValue = "-0." + value.slice(2, value.length);
+      }
+
+      if (blurValidTermination(value)) {
+        vNode.componentInstance.$data.lazyValue = formattedValue;
+      }
+
+      if (value[0] === "." && value[1] === "-") {
+        vNode.componentInstance.$data.lazyValue = oldValue;
+      }
+
+      if (value[0] !== "-" && value.includes("-")) {
+        vNode.componentInstance.$data.lazyValue = formattedValue;
+      }
+
+      newValue = vNode.componentInstance.$data.lazyValue;
     });
 
     const validDotDeleting = (oldValue, newValue) => {
@@ -187,11 +211,7 @@ Vue.directive("only-numbers", {
     };
 
     const validDeletingBeforeDot = () => {
-      return (
-        newValue[0] === "." &&
-        newValue[0] !== oldValue[0] &&
-        oldValue[1] === "."
-      );
+      return newValue[0] === "." && oldValue[1] === ".";
     };
 
     const validDeletingWithMinus = () => {
@@ -224,8 +244,8 @@ Vue.directive("only-numbers", {
 
     const blurValidZero = value => {
       return (
-        (value[0] === "0" && oldValue[0] !== "0") ||
-        (value[0] === "-" && value[1] === "0" && oldValue[1] !== "0")
+        (value[0] === "0" && value[1] !== ".") ||
+        (value[0] === "-" && value[1] === "0" && value[2] !== ".")
       );
     };
 
@@ -271,7 +291,7 @@ Vue.directive("only-numbers", {
       );
     };
 
-    const blurValidBeforeMinus = value => {
+    const blurValidMinuses = value => {
       return value[0] !== "-" && value[1] === "-";
     };
   }
