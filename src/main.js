@@ -77,12 +77,10 @@ Vue.directive("only-numbers", {
 
       if (newValue[0] === ".") {
         event.target.value = "0." + oldValue;
-        newValue = event.target.value;
       }
 
       if (newValue[0] === "-" && newValue[1] === ".") {
         event.target.value = "-0." + oldValue.slice(1, oldValue.length);
-        newValue = event.target.value;
       }
 
       if (validBeforeMinus()) {
@@ -91,12 +89,10 @@ Vue.directive("only-numbers", {
 
       if (validDeletingBeforeDot()) {
         event.target.value = "0" + oldValue.slice(1, oldValue.length);
-        newValue = event.target.value;
       }
 
       if (validDeletingWithMinus()) {
-        event.target.value = "-0" + oldValue.slice(2, oldValue.length);
-        newValue = event.target.value;
+        event.target.value = oldValue.slice(1, oldValue.length);
       }
 
       if (validNumbersAfterZero() && lastIntroduced !== "Backspace") {
@@ -108,10 +104,6 @@ Vue.directive("only-numbers", {
       let value = event.target.value;
       let formattedValue = blurValidValue(newValue);
 
-      if (validNumbersAfterZero()) {
-        vNode.componentInstance.$data.lazyValue = oldValue;
-      }
-
       if (blurValidTermination(value)) {
         vNode.componentInstance.$data.lazyValue = formattedValue;
       }
@@ -122,6 +114,16 @@ Vue.directive("only-numbers", {
 
       if (blurValidDeleting(value) || formattedValue === "-") {
         vNode.componentInstance.$data.lazyValue = "";
+      }
+
+      if (checkBlurMinusValidation(newValue)) {
+        vNode.componentInstance.$data.lazyValue = blurValidMinus(newValue);
+      } else if (secondBlurMinusValidation(newValue)) {
+        vNode.componentInstance.$data.lazyValue = "-" + validSecondMinus(newValue);
+      }
+
+      if (validNumbersAfterZero() || blurValidBeforeMinus(newValue)) {
+        vNode.componentInstance.$data.lazyValue = oldValue;
       }
     });
 
@@ -194,7 +196,10 @@ Vue.directive("only-numbers", {
     const validNumbersAfterZero = () => {
       return (
         (newValue[0] === "0" && oldValue[1] === "." && newValue[1] !== ".") ||
-        (newValue[0] === "-" && newValue[1] === "0" && newValue[2] !== "." && oldValue[2] === ".")
+        (newValue[0] === "-" &&
+          newValue[1] === "0" &&
+          newValue[2] !== "." &&
+          oldValue[2] === ".")
       );
     };
 
@@ -224,11 +229,44 @@ Vue.directive("only-numbers", {
     const blurValidValue = value => {
       if (value[value.length - 1] === "-" && value[value.length - 2] === ".") {
         return value.slice(0, value.length - 2);
-      } else if (value[value.length - 1] === "." || value[value.length - 1] === "-") {
+      } else if (
+        value[value.length - 1] === "." ||
+        value[value.length - 1] === "-"
+      ) {
         return value.slice(0, -1);
       } else {
         return value;
       }
+    };
+
+    const checkBlurMinusValidation = value => {
+      return value.includes("-") && value.indexOf("-") !== 0;
+    };
+
+    const secondBlurMinusValidation = value => {
+      return value[0] === "-" && value.slice(1, value.length).includes("-")
+    };
+
+    const blurValidMinus = value => {
+      return (
+        value.slice(0, value.indexOf("-")) +
+        value.slice(value.indexOf("-") + 1, value.length)
+      );
+    };
+
+    const validSecondMinus = value => {
+      let valueWithoutMinus = value.slice(1, value.length);
+      return (
+        valueWithoutMinus.slice(0, valueWithoutMinus.indexOf("-")) +
+        valueWithoutMinus.slice(
+          valueWithoutMinus.indexOf("-") + 1,
+          valueWithoutMinus.length
+        )
+      );
+    };
+
+    const blurValidBeforeMinus = value => {
+      return value[0] !== "-" && value[1] === "-"
     };
   }
 });
