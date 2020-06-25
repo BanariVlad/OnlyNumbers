@@ -89,10 +89,6 @@ Vue.directive("only-numbers", {
         event.target.value = "0" + oldValue.slice(1, oldValue.length);
       }
 
-      if (validDeletingWithMinus()) {
-        event.target.value = oldValue.slice(1, oldValue.length);
-      }
-
       if (validNumbersAfterZero() && lastIntroduced !== "Backspace") {
         event.target.value = oldValue;
       }
@@ -105,7 +101,11 @@ Vue.directive("only-numbers", {
         event.target.value = oldValue;
       } else if (newValue[0] === "-" && newValue[1] === ".") {
         console.log(oldValue, newValue);
-        event.target.value = "-0." + oldValue.slice(1, oldValue.length);
+        event.target.value = "-0." + oldValue.slice(2, oldValue.length);
+      }
+
+      if (validDeletingWithMinus()) {
+        event.target.value = "-0." + oldValue.slice(3, oldValue.length);
       }
 
       newValue = event.target.value;
@@ -133,8 +133,12 @@ Vue.directive("only-numbers", {
         vNode.componentInstance.$data.lazyValue = "-" + validSecondMinus(newValue);
       }
 
-      if (validNumbersAfterZero() || blurValidMinuses(newValue)) {
+      if (blurValidMinuses(newValue)) {
         vNode.componentInstance.$data.lazyValue = oldValue;
+      }
+
+      if (validNumbersAfterZero()) {
+        vNode.componentInstance.$data.lazyValue = newValue;
       }
 
       if (value[0] === ".") {
@@ -154,20 +158,20 @@ Vue.directive("only-numbers", {
       if (value[0] !== "-" && value.includes("-")) {
         vNode.componentInstance.$data.lazyValue = formattedValue;
       }
-
+      console.log(value, formattedValue, newValue, oldValue);
       newValue = vNode.componentInstance.$data.lazyValue;
     });
 
     const validDotDeleting = (oldValue, newValue) => {
       return oldValue.includes(".") && !newValue.includes(".");
-    }
+    };
 
     const validDotDeletingWithZero = () => {
       return ((oldValue.includes(".") && !newValue.includes(".")) &&
         ((mainValue[0] === "0" && mainValue[2] === "0") ||
           (mainValue[0] === "-" && mainValue[1] === "0" && mainValue[3] === "0"))
       );
-    }
+    };
 
     const validFirstSymbols = value => {
       return value !== "." && (mainValue === "0" || mainValue === "-0");
