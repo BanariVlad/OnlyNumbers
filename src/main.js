@@ -76,11 +76,13 @@ Vue.directive("only-numbers", {
       }
 
       if (newValue[0] === ".") {
-        event.target.value = oldValue;
+        event.target.value = "0." + oldValue;
+        newValue = event.target.value;
       }
 
       if (newValue[0] === "-" && newValue[1] === ".") {
-        event.target.value = oldValue;
+        event.target.value = "-0." + oldValue.slice(1, oldValue.length);
+        newValue = event.target.value;
       }
 
       if (validBeforeMinus()) {
