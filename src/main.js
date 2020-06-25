@@ -158,7 +158,6 @@ Vue.directive("only-numbers", {
       if (value[0] !== "-" && value.includes("-")) {
         vNode.componentInstance.$data.lazyValue = formattedValue;
       }
-      console.log(value, formattedValue, newValue, oldValue);
       newValue = vNode.componentInstance.$data.lazyValue;
     });
 
