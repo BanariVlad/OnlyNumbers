@@ -64,9 +64,7 @@ Vue.directive("only-numbers", {
 
       if (validDotDeleting(oldValue, newValue) && mainValue[0] === "0") {
         event.target.value = mainValue.slice(2, mainValue.length);
-      }
-
-      if (
+      } else if (
         validDotDeleting(oldValue, newValue) &&
         mainValue[0] === "-" &&
         mainValue[1] === "0"
@@ -75,12 +73,12 @@ Vue.directive("only-numbers", {
           mainValue.slice(0, 1) + mainValue.slice(3, mainValue.length);
       }
 
-      if (newValue[0] === ".") {
-        event.target.value = "0." + oldValue;
+      if (validDotDeletingWithZero()) {
+        event.target.value = oldValue;
       }
 
-      if (newValue[0] === "-" && newValue[1] === ".") {
-        event.target.value = "-0." + oldValue.slice(1, oldValue.length);
+      if (newValue[0] === ".") {
+        event.target.value = "0." + oldValue;
       }
 
       if (validBeforeMinus()) {
@@ -105,6 +103,9 @@ Vue.directive("only-numbers", {
         newValue[1] === "."
       ) {
         event.target.value = oldValue;
+      } else if (newValue[0] === "-" && newValue[1] === ".") {
+        console.log(oldValue, newValue);
+        event.target.value = "-0." + oldValue.slice(1, oldValue.length);
       }
 
       newValue = event.target.value;
@@ -159,7 +160,14 @@ Vue.directive("only-numbers", {
 
     const validDotDeleting = (oldValue, newValue) => {
       return oldValue.includes(".") && !newValue.includes(".");
-    };
+    }
+
+    const validDotDeletingWithZero = () => {
+      return ((oldValue.includes(".") && !newValue.includes(".")) &&
+        ((mainValue[0] === "0" && mainValue[2] === "0") ||
+          (mainValue[0] === "-" && mainValue[1] === "0" && mainValue[3] === "0"))
+      );
+    }
 
     const validFirstSymbols = value => {
       return value !== "." && (mainValue === "0" || mainValue === "-0");
@@ -198,9 +206,11 @@ Vue.directive("only-numbers", {
     const validZero = value => {
       return (
         value === "0" &&
-        oldValue[0] !== "0" &&
-        ((newValue[0] === "0" && newValue !== "0") ||
-          (newValue[0] === "-" && newValue[1] === "0" && newValue !== "-0"))
+        ((newValue[0] === "0" && newValue !== "0" && oldValue[0] !== "0") ||
+          (newValue[0] === "-" &&
+            newValue[1] === "0" &&
+            newValue !== "-0" &&
+            oldValue[1] !== "0"))
       );
     };
 
