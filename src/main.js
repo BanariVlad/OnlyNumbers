@@ -98,6 +98,8 @@ Vue.directive("only-numbers", {
       if (validNumbersAfterZero() && lastIntroduced !== "Backspace") {
         event.target.value = oldValue;
       }
+
+      newValue = event.target.value;
     });
 
     vNode.componentInstance.$on("blur", event => {
@@ -108,7 +110,11 @@ Vue.directive("only-numbers", {
         vNode.componentInstance.$data.lazyValue = formattedValue;
       }
 
-      if (blurValidDotAndMinus() || blurValidZero()) {
+      if (blurValidZero(value)) {
+        vNode.componentInstance.$data.lazyValue = newValue;
+      }
+
+      if (blurValidDotAndMinus()) {
         vNode.componentInstance.$data.lazyValue = formattedValue;
       }
 
@@ -119,8 +125,7 @@ Vue.directive("only-numbers", {
       if (checkBlurMinusValidation(newValue)) {
         vNode.componentInstance.$data.lazyValue = blurValidMinus(newValue);
       } else if (secondBlurMinusValidation(newValue)) {
-        vNode.componentInstance.$data.lazyValue =
-          "-" + validSecondMinus(newValue);
+        vNode.componentInstance.$data.lazyValue = "-" + validSecondMinus(newValue);
       }
 
       if (validNumbersAfterZero() || blurValidBeforeMinus(newValue)) {
@@ -217,10 +222,10 @@ Vue.directive("only-numbers", {
       );
     };
 
-    const blurValidZero = () => {
+    const blurValidZero = value => {
       return (
-        (newValue[0] === "0" && oldValue[0] !== "0") ||
-        (newValue[1] === "0" && oldValue[1] !== "0")
+        (value[0] === "0" && oldValue[0] !== "0") ||
+        (value[0] === "-" && value[1] === "0" && oldValue[1] !== "0")
       );
     };
 
@@ -230,15 +235,14 @@ Vue.directive("only-numbers", {
 
     const blurValidValue = value => {
       if (value[value.length - 1] === "-" && value[value.length - 2] === ".") {
-        return value.slice(0, value.length - 2);
-      } else if (
-        value[value.length - 1] === "." ||
-        value[value.length - 1] === "-"
-      ) {
-        return value.slice(0, -1);
-      } else {
-        return value;
+        value = value.slice(0, value.length - 2);
       }
+
+      if (value[value.length - 1] === "." || value[value.length - 1] === "-") {
+        value = value.slice(0, -1);
+      }
+
+      return value;
     };
 
     const checkBlurMinusValidation = value => {
